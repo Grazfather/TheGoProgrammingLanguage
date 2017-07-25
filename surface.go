@@ -10,7 +10,11 @@ package main
 import (
 	"fmt"
 	"image/color"
+	"io"
+	"log"
 	"math"
+	"net/http"
+	"strconv"
 )
 
 const (
@@ -26,26 +30,26 @@ const (
 
 var sin30, cos30 = math.Sin(angle), math.Cos(angle) // sin(30°), cos(30°)
 
-func main() {
-	fmt.Printf("<svg xmlns='http://www.w3.org/2000/svg' "+
+func writeSvg(w io.Writer, height, width int) {
+	fmt.Fprintf(w, "<svg xmlns='http://www.w3.org/2000/svg' "+
 		"style='stroke: grey; fill: white; stroke-width: 0.7' "+
 		"width='%d' height='%d'>", width, height)
 	for i := 0; i < cells; i++ {
 		for j := 0; j < cells; j++ {
-			ax, ay, color, oka := corner(i+1, j)
-			bx, by, _, okb := corner(i, j)
-			cx, cy, _, okc := corner(i, j+1)
-			dx, dy, _, okd := corner(i+1, j+1)
+			ax, ay, color, oka := corner(i+1, j, height, width)
+			bx, by, _, okb := corner(i, j, height, width)
+			cx, cy, _, okc := corner(i, j+1, height, width)
+			dx, dy, _, okd := corner(i+1, j+1, height, width)
 			if oka && okb && okc && okd {
-				fmt.Printf("<polygon fill='#%02X%02X%02X' points='%g,%g %g,%g %g,%g %g,%g'/>\n",
+				fmt.Fprintf(w, "<polygon fill='#%02X%02X%02X' points='%g,%g %g,%g %g,%g %g,%g'/>\n",
 					color.R, color.G, color.B, ax, ay, bx, by, cx, cy, dx, dy)
 			}
 		}
 	}
-	fmt.Println("</svg>")
+	fmt.Fprintln(w, "</svg>")
 }
 
-func corner(i, j int) (float64, float64, color.RGBA, bool) {
+func corner(i, j, height, width int) (float64, float64, color.RGBA, bool) {
 	// Find point (x,y) at corner of cell (i,j).
 	x := xyrange * (float64(i)/cells - 0.5)
 	y := xyrange * (float64(j)/cells - 0.5)
@@ -54,8 +58,8 @@ func corner(i, j int) (float64, float64, color.RGBA, bool) {
 	z := f(x, y)
 
 	// Project (x,y,z) isometrically onto 2-D SVG canvas (sx,sy).
-	sx := width/2 + (x-y)*cos30*xyscale
-	sy := height/2 + (x+y)*sin30*xyscale - z*zscale
+	sx := float64(width)/2 + (x-y)*cos30*xyscale
+	sy := float64(height)/2 + (x+y)*sin30*xyscale - z*zscale
 
 	// Figure out the colour of the point
 	z = math.Min(zmax, math.Max(zmin, z))
@@ -68,6 +72,37 @@ func corner(i, j int) (float64, float64, color.RGBA, bool) {
 func f(x, y float64) float64 {
 	r := math.Hypot(x, y) // distance from (0,0)
 	return math.Sin(r) / r
+}
+
+func main() {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		var err error
+		var myheight int
+		var mywidth int
+		r.ParseForm()
+		w.Header().Set("Content-Type", "image/svg+xml")
+		heightarg, ok := r.Form["height"]
+		if !ok {
+			myheight = height
+		} else {
+			myheight, err = strconv.Atoi(heightarg[0])
+			if err != nil {
+				myheight = height
+			}
+		}
+		weightarg, ok := r.Form["width"]
+		if !ok {
+			mywidth = width
+		} else {
+			mywidth, err = strconv.Atoi(weightarg[0])
+			if err != nil {
+				mywidth = width
+			}
+		}
+		writeSvg(w, myheight, mywidth)
+	})
+
+	log.Fatal(http.ListenAndServe("localhost:8000", nil))
 }
 
 //!-
