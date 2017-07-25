@@ -9,6 +9,7 @@ package main
 
 import (
 	"fmt"
+	"image/color"
 	"math"
 )
 
@@ -18,6 +19,8 @@ const (
 	xyrange       = 30.0                // axis ranges (-xyrange..+xyrange)
 	xyscale       = width / 2 / xyrange // pixels per x or y unit
 	zscale        = height * 0.4        // pixels per z unit
+	zmax          = 1                   // high value of z where colour saturates
+	zmin          = -1                  // low value of z where colour saturates
 	angle         = math.Pi / 6         // angle of x, y axes (=30°)
 )
 
@@ -29,18 +32,20 @@ func main() {
 		"width='%d' height='%d'>", width, height)
 	for i := 0; i < cells; i++ {
 		for j := 0; j < cells; j++ {
-			ax, ay := corner(i+1, j)
-			bx, by := corner(i, j)
-			cx, cy := corner(i, j+1)
-			dx, dy := corner(i+1, j+1)
-			fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g'/>\n",
-				ax, ay, bx, by, cx, cy, dx, dy)
+			ax, ay, color, oka := corner(i+1, j)
+			bx, by, _, okb := corner(i, j)
+			cx, cy, _, okc := corner(i, j+1)
+			dx, dy, _, okd := corner(i+1, j+1)
+			if oka && okb && okc && okd {
+				fmt.Printf("<polygon fill='#%02X%02X%02X' points='%g,%g %g,%g %g,%g %g,%g'/>\n",
+					color.R, color.G, color.B, ax, ay, bx, by, cx, cy, dx, dy)
+			}
 		}
 	}
 	fmt.Println("</svg>")
 }
 
-func corner(i, j int) (float64, float64) {
+func corner(i, j int) (float64, float64, color.RGBA, bool) {
 	// Find point (x,y) at corner of cell (i,j).
 	x := xyrange * (float64(i)/cells - 0.5)
 	y := xyrange * (float64(j)/cells - 0.5)
@@ -51,7 +56,13 @@ func corner(i, j int) (float64, float64) {
 	// Project (x,y,z) isometrically onto 2-D SVG canvas (sx,sy).
 	sx := width/2 + (x-y)*cos30*xyscale
 	sy := height/2 + (x+y)*sin30*xyscale - z*zscale
-	return sx, sy
+
+	// Figure out the colour of the point
+	z = math.Min(zmax, math.Max(zmin, z))
+	redc := uint8((z - zmin) / (zmax - zmin) * 255)
+	bluec := uint8((-z - zmin) / (zmax - zmin) * 255)
+
+	return sx, sy, color.RGBA{redc, 0, bluec, 0xff}, !math.IsInf(z, 0)
 }
 
 func f(x, y float64) float64 {
