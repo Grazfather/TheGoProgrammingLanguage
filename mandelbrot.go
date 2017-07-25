@@ -11,14 +11,17 @@ import (
 	"image"
 	"image/color"
 	"image/png"
+	"math"
 	"math/cmplx"
 	"os"
+
+	"github.com/lucasb-eyer/go-colorful"
 )
 
 func main() {
 	const (
 		xmin, ymin, xmax, ymax = -2, -2, +2, +2
-		width, height          = 1024, 1024
+		width, height          = 4096, 4096
 	)
 
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
@@ -28,7 +31,7 @@ func main() {
 			x := float64(px)/width*(xmax-xmin) + xmin
 			z := complex(x, y)
 			// Image point (px, py) represents complex value z.
-			img.Set(px, py, mandelbrot(z))
+			img.Set(px, py, newton(z))
 		}
 	}
 	png.Encode(os.Stdout, img) // NOTE: ignoring errors
@@ -42,10 +45,16 @@ func mandelbrot(z complex128) color.Color {
 	for n := uint8(0); n < iterations; n++ {
 		v = v*v + z
 		if cmplx.Abs(v) > 2 {
-			return color.Gray{255 - contrast*n}
+			return colorize(v, n)
 		}
 	}
 	return color.Black
+}
+
+func colorize(z complex128, n uint8) color.Color {
+	hue := float64(n+1) - math.Log(math.Log(cmplx.Abs(z)))/math.Log(2.)
+	hue = 0.95 + 20.0*hue
+	return colorful.Hsv(hue, 0.8, 1.0)
 }
 
 //!-
@@ -72,12 +81,16 @@ func sqrt(z complex128) color.Color {
 //    = z - (z^4 - 1) / (4 * z^3)
 //    = z - (z - 1/z^3) / 4
 func newton(z complex128) color.Color {
-	const iterations = 37
-	const contrast = 7
+	const iterations = 120
+	const contrast = 6
 	for i := uint8(0); i < iterations; i++ {
 		z -= (z - 1/(z*z*z)) / 4
 		if cmplx.Abs(z*z*z*z-1) < 1e-6 {
-			return color.Gray{255 - contrast*i}
+			hue := float64(360-contrast*int(i)) + 270
+			// Put hue in correct range
+			for ; hue > 360; hue -= 360 {
+			}
+			return colorful.Hsv(hue, 0.75, 1.0)
 		}
 	}
 	return color.Black
