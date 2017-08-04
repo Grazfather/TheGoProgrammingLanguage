@@ -3,60 +3,33 @@ package main
 import (
 	"crypto/sha256"
 	"crypto/sha512"
-	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"hash"
+	"io"
 	"os"
 )
 
-const (
-	SHA256 = iota
-	SHA384
-	SHA512
-)
-
-func hash(algo int, data []byte) (hash []byte, err error) {
-	if algo == SHA256 {
-		s := sha256.Sum256(data)
-		hash = s[:]
-	} else if algo == SHA384 {
-		s := sha512.Sum384(data)
-		hash = s[:]
-	} else if algo == SHA512 {
-		s := sha512.Sum512(data)
-		hash = s[:]
-	} else {
-		err = errors.New("Invalid hash algorithm")
-	}
-	return
-}
-
 func main() {
-	var algo int
-	do384 := flag.Bool("sha384", false, "Use sha384")
-	do512 := flag.Bool("sha512", false, "Use sha512")
+	//var algo int
+	algo := flag.String("hash", "sha256", "hashtype: sha256, sha384, or sha512")
 	flag.Parse()
 
-	if *do384 && *do512 {
-		fmt.Println("Error: Only specify one hash algorithm")
+	var hash hash.Hash
+	switch *algo {
+	case "sha256":
+		hash = sha256.New()
+	case "sha384":
+		hash = sha512.New384()
+	case "sha512":
+		hash = sha512.New()
+	default:
+		fmt.Println("Error: Only sha256, sha384, and sha512 supported")
 		os.Exit(1)
 	}
 
-	if *do384 {
-		algo = SHA384
-	} else if *do512 {
-		algo = SHA512
-	} else {
-		algo = SHA256
-	}
+	io.Copy(hash, os.Stdin)
 
-	buf, err := ioutil.ReadAll(os.Stdin)
-	if err != nil {
-		fmt.Println("Error: Could not read from STDIN")
-		os.Exit(1)
-	}
-
-	h, _ := hash(algo, buf)
+	h := hash.Sum(nil)
 	fmt.Printf("%x\n", h)
 }
