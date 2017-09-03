@@ -8,10 +8,8 @@ import (
 	"gopl.io/ch4/github"
 )
 
-const GetIssueURL = "https://api.github.com/repos/%s/issues/%s"
-
 func ReadIssue(repo, number, oauth string) (*Issue, error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf(GetIssueURL, repo, number), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf(IssueURL, repo, number), nil)
 	if err != nil {
 		return nil, err
 	}

@@ -5,6 +5,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
@@ -25,6 +26,14 @@ func create_usage() {
 
 func read_usage() {
 	fmt.Println("usage: gitcli read <repo> <#>")
+}
+
+func update_usage() {
+	fmt.Println("usage: gitcli update <repo> <#> ...")
+}
+
+func close_usage() {
+	fmt.Println("usage: gitcli close <repo> <#>")
 }
 
 func main() {
@@ -61,5 +70,34 @@ func main() {
 			return
 		}
 		fmt.Println(issue)
+	case "update":
+		if len(os.Args) < 4 {
+			update_usage()
+			return
+		}
+		updateFlag := flag.NewFlagSet("gocli update <repo> <#>", flag.ExitOnError)
+		title := updateFlag.String("title", "", "New title")
+		body := updateFlag.String("body", "", "New body")
+		state := updateFlag.String("state", "", "New state ('open' or 'closed')")
+		updateFlag.Parse(os.Args[4:])
+		opts := mygithub.IssueRequest{*title, *body, *state}
+		issue, err := mygithub.UpdateIssue(os.Args[2], os.Args[3], opts, token)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println("Success!")
+		fmt.Println(issue)
+	case "close":
+		if len(os.Args) < 4 {
+			close_usage()
+			return
+		}
+		err := mygithub.CloseIssue(os.Args[2], os.Args[3], token)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println("Success!")
 	}
 }

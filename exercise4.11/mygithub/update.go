@@ -9,16 +9,13 @@ import (
 	"gopl.io/ch4/github"
 )
 
-func CreateIssue(repo, title, body, oauth string) (*Issue, error) {
-	content, err := json.Marshal(&IssueRequest{
-		Title: title,
-		Body:  body,
-	})
+func UpdateIssue(repo, number string, request IssueRequest, oauth string) (*Issue, error) {
+	content, err := json.Marshal(&request)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", fmt.Sprintf(CreateIssuesURL, repo), bytes.NewBuffer(content))
+	req, err := http.NewRequest("PATCH", fmt.Sprintf(IssueURL, repo, number), bytes.NewBuffer(content))
 	if err != nil {
 		return nil, err
 	}
@@ -27,8 +24,8 @@ func CreateIssue(repo, title, body, oauth string) (*Issue, error) {
 	resp, err := http.DefaultClient.Do(req)
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("creating issue failed: %s", resp.Status)
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("updating issue failed: %s", resp.Status)
 	}
 
 	var issue github.Issue
@@ -36,4 +33,10 @@ func CreateIssue(repo, title, body, oauth string) (*Issue, error) {
 		return nil, err
 	}
 	return &Issue{issue}, nil
+}
+
+func CloseIssue(repo, number, oauth string) error {
+	request := IssueRequest{State: "closed"}
+	_, err := UpdateIssue(repo, number, request, oauth)
+	return err
 }
