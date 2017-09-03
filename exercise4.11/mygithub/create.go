@@ -5,15 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"gopl.io/ch4/github"
 )
 
-func CreateIssue(repo, title, body, oauth string) (*Issue, error) {
-	content, err := json.Marshal(&IssueRequest{
-		Title: title,
-		Body:  body,
-	})
+func CreateIssue(repo string, request IssueRequest, oauth string) (*Issue, error) {
+	content, err := json.Marshal(&request)
 	if err != nil {
 		return nil, err
 	}
@@ -31,9 +26,9 @@ func CreateIssue(repo, title, body, oauth string) (*Issue, error) {
 		return nil, fmt.Errorf("creating issue failed: %s", resp.Status)
 	}
 
-	var issue github.Issue
+	var issue Issue
 	if err := json.NewDecoder(resp.Body).Decode(&issue); err != nil {
 		return nil, err
 	}
-	return &Issue{issue}, nil
+	return &issue, nil
 }

@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"gopl.io/ch4/github"
 )
 
 func ReadIssue(repo, number, oauth string) (*Issue, error) {
@@ -22,9 +20,9 @@ func ReadIssue(repo, number, oauth string) (*Issue, error) {
 		return nil, fmt.Errorf("reading issue failed: %s", resp.Status)
 	}
 
-	var issue github.Issue
+	var issue Issue
 	if err := json.NewDecoder(resp.Body).Decode(&issue); err != nil {
 		return nil, err
 	}
-	return &Issue{issue}, nil
+	return &issue, nil
 }

@@ -8,6 +8,7 @@ import (
 
 type Issue struct {
 	github.Issue
+	Assignee *github.User
 }
 
 func (i *Issue) String() string {
@@ -15,6 +16,7 @@ func (i *Issue) String() string {
 		`Issue %d (%s)
 %s (%s)
 Created by %s at %v
+Assigned to %s
 
-%s`, i.Number, i.HTMLURL, i.Title, i.State, i.User.Login, i.CreatedAt, i.Body)
+%s`, i.Number, i.HTMLURL, i.Title, i.State, i.User.Login, i.CreatedAt, i.Assignee.Login, i.Body)
 }

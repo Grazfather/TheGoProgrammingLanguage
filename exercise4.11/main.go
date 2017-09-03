@@ -21,7 +21,7 @@ func usage() {
 }
 
 func create_usage() {
-	fmt.Println("usage: gitcli create <repo> <title> <body>")
+	fmt.Println("usage: gitcli create <repo> <title> ...")
 }
 
 func read_usage() {
@@ -48,11 +48,20 @@ func main() {
 	}
 	switch os.Args[1] {
 	case "create":
-		if len(os.Args) != 5 {
+		if len(os.Args) < 4 {
 			create_usage()
 			return
 		}
-		issue, err := mygithub.CreateIssue(os.Args[2], os.Args[3], os.Args[4], token)
+		createFlag := flag.NewFlagSet("gocli create <repo> <title>", flag.ExitOnError)
+		body := createFlag.String("body", "", "Issue body")
+		assignee := createFlag.String("assignee", "", "Assignee")
+		createFlag.Parse(os.Args[4:])
+		opts := mygithub.IssueRequest{
+			Title:    os.Args[3],
+			Body:     *body,
+			Assignee: *assignee,
+		}
+		issue, err := mygithub.CreateIssue(os.Args[2], opts, token)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -80,7 +89,11 @@ func main() {
 		body := updateFlag.String("body", "", "New body")
 		state := updateFlag.String("state", "", "New state ('open' or 'closed')")
 		updateFlag.Parse(os.Args[4:])
-		opts := mygithub.IssueRequest{*title, *body, *state}
+		opts := mygithub.IssueRequest{
+			Title: *title,
+			Body:  *body,
+			State: *state,
+		}
 		issue, err := mygithub.UpdateIssue(os.Args[2], os.Args[3], opts, token)
 		if err != nil {
 			fmt.Println(err)
