@@ -13,14 +13,11 @@ func CreateIssue(repo string, request IssueRequest, oauth string) (*Issue, error
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", fmt.Sprintf(IssuesURL, repo), bytes.NewBuffer(content))
+	resp, err := makeGithubRequest("POST", fmt.Sprintf(IssuesURL, repo), bytes.NewBuffer(content), oauth)
+	defer resp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Accept", "application/vnd.github.v3.text-match+json")
-	req.Header.Set("Authorization", fmt.Sprintf("token %s", oauth))
-	resp, err := http.DefaultClient.Do(req)
-	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("creating issue failed: %s", resp.Status)

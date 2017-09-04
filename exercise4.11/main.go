@@ -105,7 +105,7 @@ func main() {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(*issue)
+		fmt.Println(issue)
 	case "search":
 		if len(os.Args) < 3 {
 			search_usage()

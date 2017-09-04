@@ -9,14 +9,11 @@ import (
 )
 
 func ListIssues(repo, state, oauth string) (*[]Issue, error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf(IssuesURL, repo)+"?state="+state, nil)
+	resp, err := makeGithubRequest("GET", fmt.Sprintf(IssuesURL, repo)+"?state="+state, nil, oauth)
+	defer resp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Accept", "application/vnd.github.v3.text-match+json")
-	req.Header.Set("Authorization", fmt.Sprintf("token %s", oauth))
-	resp, err := http.DefaultClient.Do(req)
-	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("listing issues failed: %s", resp.Status)
@@ -36,14 +33,11 @@ func SearchIssues(repo string, terms []string, oauth string) (*github.IssuesSear
 }
 
 func ReadIssue(repo, number, oauth string) (*Issue, error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf(IssueURL, repo, number), nil)
+	resp, err := makeGithubRequest("GET", fmt.Sprintf(IssueURL, repo, number), nil, oauth)
+	defer resp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Accept", "application/vnd.github.v3.text-match+json")
-	req.Header.Set("Authorization", fmt.Sprintf("token %s", oauth))
-	resp, err := http.DefaultClient.Do(req)
-	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("reading issue failed: %s", resp.Status)

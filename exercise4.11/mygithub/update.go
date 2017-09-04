@@ -13,14 +13,11 @@ func UpdateIssue(repo, number string, request IssueRequest, oauth string) (*Issu
 		return nil, err
 	}
 
-	req, err := http.NewRequest("PATCH", fmt.Sprintf(IssueURL, repo, number), bytes.NewBuffer(content))
+	resp, err := makeGithubRequest("PATCH", fmt.Sprintf(IssueURL, repo, number), bytes.NewBuffer(content), oauth)
+	defer resp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Accept", "application/vnd.github.v3.text-match+json")
-	req.Header.Set("Authorization", fmt.Sprintf("token %s", oauth))
-	resp, err := http.DefaultClient.Do(req)
-	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("updating issue failed: %s", resp.Status)
