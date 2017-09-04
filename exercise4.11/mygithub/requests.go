@@ -1,7 +1,7 @@
 package mygithub
 
-const CreateIssuesURL = "https://api.github.com/repos/%s/issues"
-const IssueURL = CreateIssuesURL + "/%s"
+const IssuesURL = "https://api.github.com/repos/%s/issues"
+const IssueURL = IssuesURL + "/%s"
 
 type IssueRequest struct {
 	Title    string `json:"title,omitempty"`

@@ -24,8 +24,16 @@ func create_usage() {
 	fmt.Println("usage: gitcli create <repo> <title> ...")
 }
 
+func list_usage() {
+	fmt.Println("usage: gitcli list <repo> [open|closed|all]")
+}
+
 func read_usage() {
 	fmt.Println("usage: gitcli read <repo> <#>")
+}
+
+func search_usage() {
+	fmt.Println("usage: gitcli search <repo> terms ...")
 }
 
 func update_usage() {
@@ -68,6 +76,25 @@ func main() {
 		}
 		fmt.Println("Success!")
 		fmt.Println(issue)
+	case "list":
+		if len(os.Args) < 3 {
+			list_usage()
+			return
+		}
+		var state string
+		if len(os.Args) > 3 {
+			state = os.Args[3]
+		} else {
+			state = "open"
+		}
+		issues, err := mygithub.ListIssues(os.Args[2], state, token)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		for _, i := range *issues {
+			fmt.Printf("#%d: %s (%s)\n", i.Number, i.Title, i.User.Login)
+		}
 	case "read":
 		if len(os.Args) != 4 {
 			read_usage()
@@ -78,7 +105,20 @@ func main() {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(issue)
+		fmt.Println(*issue)
+	case "search":
+		if len(os.Args) < 3 {
+			search_usage()
+			return
+		}
+		results, err := mygithub.SearchIssues(os.Args[2], os.Args[3:], token)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		for _, i := range results.Items {
+			fmt.Printf("#%d: %s (%s)\n", i.Number, i.Title, i.User.Login)
+		}
 	case "update":
 		if len(os.Args) < 4 {
 			update_usage()

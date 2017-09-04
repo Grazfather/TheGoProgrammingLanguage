@@ -13,7 +13,7 @@ func CreateIssue(repo string, request IssueRequest, oauth string) (*Issue, error
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", fmt.Sprintf(CreateIssuesURL, repo), bytes.NewBuffer(content))
+	req, err := http.NewRequest("POST", fmt.Sprintf(IssuesURL, repo), bytes.NewBuffer(content))
 	if err != nil {
 		return nil, err
 	}
