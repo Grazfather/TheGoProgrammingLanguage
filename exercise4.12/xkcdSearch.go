@@ -67,7 +67,7 @@ func main() {
 			if err != nil {
 				break
 			}
-			if match, _ := regexp.Match(*query, []byte(comic.Transcript)); match {
+			if match, _ := regexp.MatchString(*query, comic.Transcript); match {
 				fmt.Println(comic)
 			}
 		}
