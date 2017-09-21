@@ -1,7 +1,7 @@
 package main
 
 import (
-	"lissajous"
+	"github.com/Grazfather/TheGoProgrammingLanguage/ch1/lissajous"
 	"log"
 	"net/http"
 )
