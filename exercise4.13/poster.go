@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-var queryUrl = "http://www.omdbapi.com/?apikey=%s&t=%s"
+var queryURL = "http://www.omdbapi.com/?apikey=%s&t=%s"
 
 type QueryResponse struct {
 	Poster   string
@@ -21,7 +21,7 @@ type QueryResponse struct {
 func searchMovie(query, apikey string) (string, error) {
 	query = url.PathEscape(query)
 
-	resp, err := http.Get(fmt.Sprintf(queryUrl, apikey, query))
+	resp, err := http.Get(fmt.Sprintf(queryURL, apikey, query))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return "", err

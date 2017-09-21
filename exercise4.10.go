@@ -56,12 +56,11 @@ func getFilterFunc(filter string) (func(*github.Issue) bool, error) {
 				return true
 			}
 			return false
-		} else {
-			if time.Since(issue.CreatedAt) > threshold {
-				return true
-			}
-			return false
 		}
+		if time.Since(issue.CreatedAt) > threshold {
+			return true
+		}
+		return false
 	}, nil
 }
 

@@ -7,11 +7,11 @@ import (
 	"os"
 )
 
-var XkcdUrl = "https://xkcd.com/%d/info.0.json"
+var xkcdURL = "https://xkcd.com/%d/info.0.json"
 
 func main() {
 	for i := 1; ; i++ {
-		resp, err := http.Get(fmt.Sprintf(XkcdUrl, i))
+		resp, err := http.Get(fmt.Sprintf(xkcdURL, i))
 		fmt.Printf("Downloading xkcd #%d\n", i)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())

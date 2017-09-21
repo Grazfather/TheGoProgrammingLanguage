@@ -20,27 +20,27 @@ func usage() {
 	fmt.Println("usage: gocli <cmd> [<args>]")
 }
 
-func create_usage() {
+func createUsage() {
 	fmt.Println("usage: gitcli create <repo> <title> ...")
 }
 
-func list_usage() {
+func listUsage() {
 	fmt.Println("usage: gitcli list <repo> [open|closed|all]")
 }
 
-func read_usage() {
+func readUsage() {
 	fmt.Println("usage: gitcli read <repo> <#>")
 }
 
-func search_usage() {
+func searchUsage() {
 	fmt.Println("usage: gitcli search <repo> terms ...")
 }
 
-func update_usage() {
+func updateUsage() {
 	fmt.Println("usage: gitcli update <repo> <#> ...")
 }
 
-func close_usage() {
+func closeUsage() {
 	fmt.Println("usage: gitcli close <repo> <#>")
 }
 
@@ -57,7 +57,7 @@ func main() {
 	switch os.Args[1] {
 	case "create":
 		if len(os.Args) < 4 {
-			create_usage()
+			createUsage()
 			return
 		}
 		createFlag := flag.NewFlagSet("gocli create <repo> <title>", flag.ExitOnError)
@@ -78,7 +78,7 @@ func main() {
 		fmt.Println(issue)
 	case "list":
 		if len(os.Args) < 3 {
-			list_usage()
+			listUsage()
 			return
 		}
 		var state string
@@ -97,7 +97,7 @@ func main() {
 		}
 	case "read":
 		if len(os.Args) != 4 {
-			read_usage()
+			readUsage()
 			return
 		}
 		issue, err := mygithub.ReadIssue(os.Args[2], os.Args[3], token)
@@ -108,7 +108,7 @@ func main() {
 		fmt.Println(issue)
 	case "search":
 		if len(os.Args) < 3 {
-			search_usage()
+			searchUsage()
 			return
 		}
 		results, err := mygithub.SearchIssues(os.Args[2], os.Args[3:], token)
@@ -121,7 +121,7 @@ func main() {
 		}
 	case "update":
 		if len(os.Args) < 4 {
-			update_usage()
+			updateUsage()
 			return
 		}
 		updateFlag := flag.NewFlagSet("gocli update <repo> <#>", flag.ExitOnError)
@@ -143,7 +143,7 @@ func main() {
 		fmt.Println(issue)
 	case "close":
 		if len(os.Args) < 4 {
-			close_usage()
+			closeUsage()
 			return
 		}
 		err := mygithub.CloseIssue(os.Args[2], os.Args[3], token)
