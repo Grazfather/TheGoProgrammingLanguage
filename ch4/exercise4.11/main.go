@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Grazfather/GoPL/exercise4.11/mygithub"
+	"github.com/Grazfather/TheGoProgrammingLanguage/ch4/exercise4.11/mygithub"
 )
 
 var (
